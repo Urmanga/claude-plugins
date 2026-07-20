@@ -1,0 +1,19 @@
+{
+  "name": "urmanga",
+  "description": "Personal tooling: gated research delegated to Cursor CLI, and social posts written in your own voice.",
+  "owner": {
+    "name": "urmanga"
+  },
+  "plugins": [
+    {
+      "name": "delegation",
+      "source": "./plugins/delegation",
+      "description": "Phased research through Cursor CLI with deterministic acceptance: questions split by facet, a runner that verifies instead of trusting, every cited URL checked against the tool log."
+    },
+    {
+      "name": "gamesmm",
+      "source": "./plugins/gamesmm",
+      "description": "Social posts for games in your own voice: setup captures a style passport from your real posts plus your platforms, then any piece of news becomes a set of posts tailored per platform."
+    }
+  ]
+}

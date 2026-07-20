@@ -1,0 +1,1 @@
+{"gate": 52, "workspace": "C:/Users/user/AppData/Local/Temp/claude/I--Github-FreeTokenizer/cc137453-ace1-4577-8831-eabf42f4d9c3/scratchpad/ws", "model": "composer-2.5", "hardTimeoutMs": 15000, "idleTimeoutMs": 6000, "drainMs": 3000, "concurrency": 1, "tries": 1, "required": ["findings"], "citationPolicy": "fetched", "workers": [{"key": "w1", "prompt": "x"}]}

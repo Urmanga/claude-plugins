@@ -1,0 +1,8 @@
+{
+  "name": "delegation",
+  "description": "Gated research through Cursor CLI. The script splits a topic into facets, launches a batch of scouts, and accepts their work deterministically: every cited link is checked against the tool log, and a partial result counts as a failure.",
+  "author": {
+    "name": "urmanga"
+  },
+  "keywords": ["research", "cursor-cli", "delegation", "multi-agent"]
+}
