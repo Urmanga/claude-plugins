@@ -1,20 +1,29 @@
 # urmanga plugins
 
-A Claude Code marketplace with two plugins: one delegates research to Cursor CLI and verifies what comes back, the other writes social posts in your own voice.
+A personal marketplace of Claude Code plugins — small, opinionated tools built for daily use rather than for demos.
 
 ## Install
 
 ```
 /plugin marketplace add Urmanga/claude-plugins
+```
+
+Then install whichever plugins you want:
+
+```
 /plugin install delegation@urmanga
 /plugin install gamesmm@urmanga
 ```
 
-Requires Node 18+. `delegation` additionally needs [Cursor CLI](https://cursor.com/cli) installed and signed in.
+Requires Node 18+. Individual plugins may have their own requirements, noted below.
 
 ---
 
+# Plugins
+
 ## delegation
+
+*Requires [Cursor CLI](https://cursor.com/cli), installed and signed in.*
 
 Phased research that runs on Cursor's quota instead of Claude's. You slice a topic into facets and hand them to a batch of scouts; a script decides deterministically who did the work and who faked it.
 
