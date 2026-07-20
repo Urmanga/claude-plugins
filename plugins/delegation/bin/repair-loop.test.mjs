@@ -94,6 +94,14 @@ await (async () => {
     { accepted: false, stopReason: 'budget' })
 })()
 
+// Infra failure (OUR gate could not run) must stop the loop on the spot: the
+// writer cannot fix broken tooling, retrying only burns quota. Regression
+// fixture for the live bug: spawn('npx') ENOENT burned two composer attempts.
+check('infra failure stops immediately, no retry',
+  await withRepo((wt) => repairLoop({ worktree: wt, task: 't', runWriter: liveWriter,
+    acceptFn: scriptedAccept([REJECT(3, 'infra', 'typecheck could not run: ENOENT'), ACCEPT]), maxAttempts: 5, stuck: 2 })),
+  { accepted: false, stopReason: 'infra', attempts: 1 })
+
 console.log('\nrevert safety:')
 
 // On attempt 1 the writer creates ITS file; a FOREIGN untracked file is already in

@@ -41,7 +41,9 @@ async function check(name, { base, edit, cfg = {}, want }) {
   try {
     wt = makeRepo(base, edit)
     const v = await acceptCode(wt, cfg)
-    const ok = v.accepted === want.accepted && (want.gate === undefined || v.gate === want.gate)
+    const ok = v.accepted === want.accepted &&
+      (want.gate === undefined || v.gate === want.gate) &&
+      (want.kind === undefined || v.kind === want.kind)
     if (ok) {
       pass++
       const tag = v.accepted ? (v.coverageBacked ? 'accept' : 'accept/NOT-guaranteed') : `reject gate${v.gate} [${v.kind}]`
@@ -154,6 +156,27 @@ await check('EXPECT-ACCEPT-BUT-WRONG: regression in UNCOVERED path', {
   base: BASE,
   edit: (wt) => w(wt, 'src/rate.ts', 'export function computeRate(x: number): number {\n  if (x < 0) return -999;\n  return x * x;\n}\n'),
   cfg: CFG,
+  want: { accepted: true },
+})
+
+console.log('\ninfra vs writer classification:')
+
+// Gate command that does not exist anywhere → must be kind 'infra', NOT
+// blamed on the writer as a typecheck failure. Regression fixture for the
+// live bug: spawn('npx') failed on Windows and burned two writer attempts.
+await check('missing gate command → infra, not typecheck', {
+  base: BASE,
+  edit: (wt) => w(wt, 'src/rate.ts', 'export function computeRate(x: number): number {\n  return x * x;\n}\n'),
+  cfg: { ...CFG, typecheck: ['definitely-not-a-real-tool-xyz'] },
+  want: { accepted: false, gate: 3, kind: 'infra' },
+})
+
+// .cmd shim resolution on Windows: npx is npx.cmd, spawn() without cmd.exe
+// routing dies with ENOENT (exit -1). `npx --version` is local and fast.
+await check('npx .cmd shim resolves through cmd.exe routing', {
+  base: BASE,
+  edit: (wt) => w(wt, 'src/rate.ts', 'export function computeRate(x: number): number {\n  return x * x;\n}\n'),
+  cfg: { ...CFG, typecheck: ['npx', '--version'] },
   want: { accepted: true },
 })
 

@@ -85,7 +85,7 @@ Worktree already reverted to initial state — previous fix is not on disk, star
 }
 
 // ── loop ────────────────────────────────────────────────────────────────────
-// stopReason: 'accepted' | 'stuck' | 'budget' | 'max-attempts' | 'writer-dead'
+// stopReason: 'accepted' | 'stuck' | 'budget' | 'max-attempts' | 'writer-dead' | 'infra'
 
 export async function repairLoop({
   worktree,
@@ -140,6 +140,13 @@ export async function repairLoop({
     lastFail = { gate: verdict.gate, kind: verdict.kind, reason: verdict.reason, diff }
     history.push({ attempt, gate: verdict.gate, kind: verdict.kind, reason: verdict.reason })
     log({ t: 'repair.rejected', attempt, gate: verdict.gate, kind: verdict.kind, reason: verdict.reason })
+
+    // Infra failure = OUR gate could not run (command missing, timeout). The
+    // writer cannot fix that; re-prompting only burns quota. Stop immediately.
+    if (verdict.kind === 'infra') {
+      log({ t: 'repair.infra', attempt, reason: verdict.reason })
+      return { accepted: false, attempts: attempt, stopReason: 'infra', verdict: lastFail, history }
+    }
 
     const sig = errorSignature(verdict)
     if (sig === prevSig) {

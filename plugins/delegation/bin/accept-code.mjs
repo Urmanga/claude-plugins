@@ -15,13 +15,43 @@
 // diff from DISK. The agent's own exit code is not used — in Cursor it is
 // undocumented. Disk (git) is truth; agent stream-json is a hint.
 
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
+
+const IS_WIN = process.platform === 'win32'
+
+// Deterministic "command not found" detection for Windows. cmd.exe's exit code
+// for an unknown command is unreliable (observed 1, not the documented 9009)
+// and its stderr text is locale-dependent — `where` exits 0 iff found, always.
+const whereCache = new Map()
+function missingOnWin(cmd) {
+  if (whereCache.has(cmd)) return whereCache.get(cmd)
+  let missing
+  if (/[\\/]/.test(cmd)) {
+    missing = !['', '.exe', '.cmd', '.bat'].some((ext) => existsSync(cmd + ext))
+  } else {
+    missing = spawnSync('where', [cmd], { windowsHide: true }).status !== 0
+  }
+  whereCache.set(cmd, missing)
+  return missing
+}
 
 // ── run command with timeout ───────────────────────────────────────────────
+// On Windows, tool entrypoints (npx / tsc / eslint / vitest) are .cmd shims
+// that spawn() cannot exec directly (ENOENT → error event → code -1). Route
+// every command through cmd.exe, same pattern the Cursor writer uses. Gate
+// commands carry no quoting-sensitive args, so cmd.exe parsing is safe here.
 
 function run(cmd, args, { cwd, timeoutMs = 300_000 } = {}) {
   return new Promise((resolve) => {
-    const p = spawn(cmd, args, { cwd, windowsHide: true, shell: false })
+    if (IS_WIN && missingOnWin(cmd)) {
+      resolve({ code: -1, out: '', err: '', spawnError: `command not found: ${cmd}` })
+      return
+    }
+    const [c, a] = IS_WIN
+      ? [process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', cmd, ...args]]
+      : [cmd, args]
+    const p = spawn(c, a, { cwd, windowsHide: true, shell: false })
     let out = ''
     let err = ''
     let done = false
@@ -42,6 +72,16 @@ function run(cmd, args, { cwd, timeoutMs = 300_000 } = {}) {
 }
 
 const git = (wt, args, opts = {}) => run('git', ['-C', wt, ...args], { cwd: wt, ...opts })
+
+// Failure of the RUNNER, not of the code under test: the gate command itself
+// could not start. Must surface as kind 'infra' — blaming the writer for our
+// broken tooling burns repair attempts on an unfixable prompt.
+// 9009 = cmd.exe "not recognized"; spawnError = ENOENT et al. on POSIX.
+function infraFailure(r) {
+  if (r.spawnError) return `command could not start: ${r.spawnError}`
+  if (IS_WIN && r.code === 9009) return 'command not found (cmd exit 9009)'
+  return null
+}
 
 // ── configuration defaults (TypeScript) ────────────────────────────────────────
 
@@ -188,6 +228,8 @@ export async function acceptCode(worktree, opts = {}) {
   if (cfg.typecheck) {
     const tc = await run(cfg.typecheck[0], cfg.typecheck.slice(1), { cwd: worktree, timeoutMs: cfg.timeoutMs })
     if (tc.timedOut) return { accepted: false, gate: 3, reason: `typecheck timed out (${cfg.timeoutMs}ms)`, kind: 'infra', changed }
+    const tcInfra = infraFailure(tc)
+    if (tcInfra) return { accepted: false, gate: 3, reason: `typecheck could not run: ${tcInfra}`, kind: 'infra', changed }
     if (tc.code !== 0) {
       const first = (tc.out + tc.err).split(/\r?\n/).filter((l) => /error/i.test(l))[0] || `exit ${tc.code}`
       return { accepted: false, gate: 3, reason: `typecheck failed: ${first.trim().slice(0, 120)}`, kind: 'typecheck', changed }
@@ -204,6 +246,8 @@ export async function acceptCode(worktree, opts = {}) {
   if (cfg.lint) {
     const lt = await run(cfg.lint[0], cfg.lint.slice(1), { cwd: worktree, timeoutMs: cfg.timeoutMs })
     if (lt.timedOut) return { accepted: false, gate: 4, reason: `lint timed out`, kind: 'infra', changed }
+    const ltInfra = infraFailure(lt)
+    if (ltInfra) return { accepted: false, gate: 4, reason: `lint could not run: ${ltInfra}`, kind: 'infra', changed }
     if (lt.code !== 0) {
       const first = (lt.out + lt.err).split(/\r?\n/).filter(Boolean)[0] || `exit ${lt.code}`
       return { accepted: false, gate: 4, reason: `lint failed: ${first.trim().slice(0, 120)}`, kind: 'lint', changed }
@@ -216,6 +260,8 @@ export async function acceptCode(worktree, opts = {}) {
   if (cfg.failToPass) {
     const f = await run(cfg.failToPass[0], cfg.failToPass.slice(1), { cwd: worktree, timeoutMs: cfg.timeoutMs })
     if (f.timedOut) return { accepted: false, gate: 5, reason: `FAIL_TO_PASS timed out`, kind: 'infra', changed }
+    const fInfra = infraFailure(f)
+    if (fInfra) return { accepted: false, gate: 5, reason: `FAIL_TO_PASS could not run: ${fInfra}`, kind: 'infra', changed }
     if (f.code !== 0) {
       const last = (f.out + f.err).split(/\r?\n/).filter(Boolean).slice(-1)[0] || `exit ${f.code}`
       return { accepted: false, gate: 5, reason: `target test (FAIL_TO_PASS) not green: ${last.trim().slice(0, 120)}`, kind: 'test', changed }
@@ -226,6 +272,8 @@ export async function acceptCode(worktree, opts = {}) {
   if (cfg.passToPass) {
     const pt = await run(cfg.passToPass[0], cfg.passToPass.slice(1), { cwd: worktree, timeoutMs: cfg.timeoutMs })
     if (pt.timedOut) return { accepted: false, gate: 5, reason: `PASS_TO_PASS timed out`, kind: 'infra', changed }
+    const ptInfra = infraFailure(pt)
+    if (ptInfra) return { accepted: false, gate: 5, reason: `PASS_TO_PASS could not run: ${ptInfra}`, kind: 'infra', changed }
     if (pt.code !== 0) {
       const last = (pt.out + pt.err).split(/\r?\n/).filter(Boolean).slice(-1)[0] || `exit ${pt.code}`
       return { accepted: false, gate: 5, reason: `regression: previously green tests (PASS_TO_PASS) broken: ${last.trim().slice(0, 120)}`, kind: 'regression', changed }

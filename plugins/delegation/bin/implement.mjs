@@ -85,6 +85,10 @@ const acceptCfg = {
 
 const branch = task.branch || `impl/${Date.now().toString(36)}`
 const startRef = git(repo, 'rev-parse', 'HEAD').stdout.trim()
+// Remember the BRANCH the user was on: checking out the raw SHA on failure
+// would leave them on a detached HEAD (live-run lesson).
+const startBranchRaw = git(repo, 'rev-parse', '--abbrev-ref', 'HEAD').stdout.trim()
+const startBranch = startBranchRaw && startBranchRaw !== 'HEAD' ? startBranchRaw : startRef
 
 emit('impl.start', { repo, branch, startRef: startRef.slice(0, 8), stack: task.stack || 'ts' })
 
@@ -171,10 +175,10 @@ try {
   // on our working branch. Keep the branch with successful commit — that's the result.
   const prev = git(repo, 'rev-parse', '--abbrev-ref', 'HEAD').stdout.trim()
   if (prev === branch && report && !report.ok) {
-    git(repo, 'checkout', '-q', startRef)
+    git(repo, 'checkout', '-q', startBranch)
     git(repo, 'branch', '-qD', branch)
   } else if (prev === branch) {
-    git(repo, 'checkout', '-q', '-') // return to previous branch, keep result branch
+    git(repo, 'checkout', '-q', startBranch) // return to start branch, keep result branch
   }
 }
 
