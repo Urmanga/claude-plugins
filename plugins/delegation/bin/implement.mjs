@@ -143,17 +143,36 @@ try {
       ? `impl: ${task.task.slice(0, 60)}`
       : `impl (UNVERIFIED, no test oracle): ${task.task.slice(0, 50)}`
     const c = git(repo, '-c', 'user.email=impl@local', '-c', 'user.name=implement', 'commit', '-q', '-m', msg)
-    const committed = c.status === 0
-    report = {
-      ok: true,
-      branch,
-      attempts: result.attempts,
-      coverageBacked: Boolean(cov),
-      committed,
-      // Honest boundary: accepted = not caught cheating + tests passed.
-      // Without a test oracle correctness is NOT confirmed.
-      correctness: cov ? 'passed tests (but tests are not a full guarantee)' : 'NOT CONFIRMED: no test oracle was present',
-      warnings: result.verdict?.warnings || [],
+    if (c.status !== 0) {
+      // The orchestrator committing IS the contract. A failed commit (pre-commit
+      // hook, signing, an empty index) means the accepted work is not durable —
+      // reporting ok here would be the runner lying about its own effect.
+      // We do NOT roll back: the work passed the gates and throwing it away would
+      // be worse. keepTree tells the finally block to leave us on the branch so
+      // the changes stay findable instead of riding along to the start branch.
+      report = {
+        ok: false,
+        branch,
+        attempts: result.attempts,
+        stopReason: 'commit-failed',
+        keepTree: true,
+        coverageBacked: Boolean(cov),
+        committed: false,
+        lastReason: (c.stderr || c.stdout || '').trim().slice(0, 400) || 'git commit exited non-zero',
+        hint: `changes passed acceptance and are left UNCOMMITTED on branch ${branch}`,
+      }
+    } else {
+      report = {
+        ok: true,
+        branch,
+        attempts: result.attempts,
+        coverageBacked: Boolean(cov),
+        committed: true,
+        // Honest boundary: accepted = not caught cheating + tests passed.
+        // Without a test oracle correctness is NOT confirmed.
+        correctness: cov ? 'passed tests (but tests are not a full guarantee)' : 'NOT CONFIRMED: no test oracle was present',
+        warnings: result.verdict?.warnings || [],
+      }
     }
   } else {
     // Rollback: restore tree to start, delete branch, return to where we came from.
@@ -171,13 +190,15 @@ try {
 } catch (e) {
   report = { ok: false, error: e.message, stopReason: 'orchestrator-crash', branch }
 } finally {
-  // Always return user to original commit/branch, so we don't leave them
-  // on our working branch. Keep the branch with successful commit — that's the result.
+  // Always return the user to their original branch, so we don't strand them on
+  // ours. Keep the branch with a successful commit — that's the result.
+  // Exception: keepTree (commit failed). Switching away would drag accepted but
+  // uncommitted changes onto the start branch, so we deliberately stay put.
   const prev = git(repo, 'rev-parse', '--abbrev-ref', 'HEAD').stdout.trim()
-  if (prev === branch && report && !report.ok) {
+  if (prev === branch && report && !report.ok && !report.keepTree) {
     git(repo, 'checkout', '-q', startBranch)
     git(repo, 'branch', '-qD', branch)
-  } else if (prev === branch) {
+  } else if (prev === branch && report && report.ok) {
     git(repo, 'checkout', '-q', startBranch) // return to start branch, keep result branch
   }
 }

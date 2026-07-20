@@ -25,34 +25,61 @@ Requires Node 18+. Individual plugins may have their own requirements, noted bel
 
 *Requires [Cursor CLI](https://cursor.com/cli), installed and signed in.*
 
-Phased research that runs on Cursor's quota instead of Claude's. You slice a topic into facets and hand them to a batch of scouts; a script decides deterministically who did the work and who faked it.
+Work runs on Cursor's quota instead of Claude's, so your own limits go on thinking rather than typing. Three modes share one principle: **an agent's report about itself is never evidence.** Acceptance looks at observable effect — the tool log, the git diff, the gates — and a partial result counts as a failure.
 
-**The verification gate is the point.** Every URL a scout cites is checked against its own tool log. An agent that quotes a page it never opened gets rejected and retried — not trusted, not averaged in. Research counts only what passed.
+### research — scouts behind an evidence gate
+
+You slice a topic into facets and hand them to a batch of scouts; a script decides who did the work and who faked it. Every URL a scout cites is checked against its own tool log: quote a page you never opened and you're rejected and retried, not averaged in.
+
+```bash
+node bin/partition.mjs candidates.json --select 6 --out gate1.json
+node bin/research.mjs gate1.json --out ./gate1-out --concurrency 4
+node bin/partition.mjs candidates2.json --select 4 --out gate2.json --known ./gate1-out/report.json
+```
+
+Hard caps: **6 scouts per round, 3 rounds**, model always pinned. They don't move for any task, however important — ignoring them once burned a week of limits.
 
 Three rules that cost real quota to learn:
 
 - **A fan-out doesn't learn.** Four agents given one question return one answer. The win comes from slicing the topic, not from adding agents.
 - **Agents lie about their sources.** Twice in one evening, scouts cited pages they had never opened. Hence the log check.
-- **A partial result is a failure.** "6 of 6" with two missing devalues everything above it. The counter only counts what passed acceptance.
+- **A partial result is a failure.** "6 of 6" with two missing devalues everything above it.
 
-Hard caps: **6 scouts per round, 3 rounds**, model always pinned. These don't move for any task, however important — ignoring them once burned a week of limits.
+### implement — a code writer on an isolated branch
 
-### How a round goes
+One task: isolated branch → composer writes → six gates on every attempt → repair loop → the orchestrator commits, never the agent. Green lands on its own branch; red after the ceiling rolls back and reports why.
 
 ```bash
-# 1. You write candidates.json: facets, three phrasings each
-node bin/partition.mjs candidates.json --select 6 --out gate1.json
-
-# 2. Scouts run in parallel; the runner accepts or rejects each
-node bin/research.mjs gate1.json --out ./gate1-out --concurrency 4
-
-# 3. Read report.json, decide whether a second round is worth it
-node bin/partition.mjs candidates2.json --select 4 --out gate2.json --known ./gate1-out/report.json
+node bin/implement.mjs task.json
 ```
 
-Exit codes: `0` round complete, `1` someone failed acceptance, `2` the runner itself broke. Rejections are typed — infrastructure, agent error, malformed output, or fabricated evidence — so you know whether to retry or rewrite the question.
+The gates check disk effect and path ownership, that tests weren't touched, that nothing was stubbed out, typecheck, lint, and that the target test went green while the rest stayed green.
 
-Acceptance logic lives in its own module with 19 fixtures: `node bin/accept.test.mjs`.
+**Acceptance here is a fraud filter, not a correctness oracle.** There is no code analogue of the citation check — `if (x === 42) return 1764` passes everything. So without a failing test to go green, the runner reports `coverageBacked: false` and *correctness NOT confirmed*, and that wording is meant to reach the user unrounded. Two fixtures exist specifically to prove the limit: a test-fitted answer and a regression in an uncovered path both **pass**.
+
+The writer cannot write test files, cannot commit, and cannot leave its allowed paths. That's what makes the tests you write beforehand a real constraint on it — an invariant guard rides along as PASS_TO_PASS and rejects any change that breaks it.
+
+### transform — a parallel pool for bulk mechanical edits
+
+Many independent files, one rule, composers in parallel. Each works in an isolated copy of a single file, so parallelism is safe here — unlike in `implement`, where files share contracts.
+
+```bash
+node bin/transform.mjs task.json
+```
+
+Per-file acceptance is syntax intact + goal reached + only its own file touched. The behavioural oracle runs last, on the merged result: if the suites go red, every file is restored byte-for-byte. Nothing is applied unless **every** file passed — half a codebase transformed is worse than none.
+
+### Fixtures
+
+The acceptance logic is what everything else rests on, so it has its own tests:
+
+```bash
+node bin/accept.test.mjs          # 19 cases — research acceptance
+node bin/accept-code.test.mjs     # 13 cases — code gates, 2 deliberately accept-but-wrong
+node bin/repair-loop.test.mjs     # 9 cases  — incl. surgical-revert safety
+```
+
+Failure injection lives in `test/fake/` — a fake agent with `leak`, `drain`, `fail`, and `hold` modes.
 
 ---
 
@@ -84,8 +111,10 @@ The style profile and post history live in `~/.claude/gamesmm/` — outside this
 .claude-plugin/marketplace.json   marketplace manifest
 plugins/
   delegation/
-    bin/                          partition, runner, acceptance + fixtures
-    skills/research/SKILL.md      how to run a round
+    bin/                          partition, runners, acceptance + fixtures
+    skills/research/SKILL.md      scouts behind an evidence gate
+    skills/implement/SKILL.md     delegated coding behind acceptance gates
+    skills/transform/SKILL.md     parallel pool for bulk mechanical edits
     test/fake/                    fake agent for failure injection
   gamesmm/
     skills/gamesmm/SKILL.md       setup and working mode

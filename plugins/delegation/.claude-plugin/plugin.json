@@ -1,8 +1,8 @@
 {
   "name": "delegation",
-  "description": "Gated research through Cursor CLI. The script splits a topic into facets, launches a batch of scouts, and accepts their work deterministically: every cited link is checked against the tool log, and a partial result counts as a failure.",
+  "description": "Delegate work to Cursor composers instead of spending Claude limits, and never trust what an agent reports about itself. Three modes: research (scouts whose every cited URL is checked against the tool log), implement (one writer on an isolated branch behind acceptance gates and a repair loop), transform (a parallel pool applying one rule across independent files). Acceptance is deterministic and observable-effect based; a partial result counts as a failure, and a run with no oracle is reported as unverified rather than green.",
   "author": {
     "name": "urmanga"
   },
-  "keywords": ["research", "cursor-cli", "delegation", "multi-agent"]
+  "keywords": ["research", "cursor-cli", "delegation", "multi-agent", "code-generation", "bulk-refactor", "acceptance-gates"]
 }

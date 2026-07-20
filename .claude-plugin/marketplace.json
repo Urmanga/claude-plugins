@@ -8,7 +8,7 @@
     {
       "name": "delegation",
       "source": "./plugins/delegation",
-      "description": "Phased research through Cursor CLI with deterministic acceptance: questions split by facet, a runner that verifies instead of trusting, every cited URL checked against the tool log."
+      "description": "Push work onto Cursor composers and keep your own limits for thinking. Research scouts, a gated code writer on an isolated branch, and a parallel pool for bulk mechanical edits — all accepted by observable effect, never by the agent's own word."
     },
     {
       "name": "gamesmm",
