@@ -15,6 +15,8 @@ Always read `profile.md` first.
 - File doesn't exist → **setup mode**: capture style, platforms, and context, save the profile.
 - File exists → **working mode**: write posts per profile. Don't return to setup unless the user explicitly asks to update the profile.
 
+If the profile has a `## TODO` section, mention those open items **once** at the start of a session, in two or three lines — then get on with the actual request. It's a reminder, not a gate: never refuse to write posts because the profile is incomplete. For a platform the profile doesn't cover yet, say so plainly and write it from the closest platform's voice. When an item gets resolved, delete it from the TODO list.
+
 ## Setup mode (first run)
 
 The goal isn't a questionnaire for its own sake — it's material you can actually write as this person from. Collect three things, in this order:
