@@ -11,9 +11,9 @@
       "description": "Push work onto Cursor composers and keep your own limits for thinking. Research scouts, a gated code writer on an isolated branch, and a parallel pool for bulk mechanical edits — all accepted by observable effect, never by the agent's own word."
     },
     {
-      "name": "gamesmm",
-      "source": "./plugins/gamesmm",
-      "description": "Social posts for games in your own voice: setup captures a style passport from your real posts plus your platforms, then any piece of news becomes a set of posts tailored per platform."
+      "name": "ditto",
+      "source": "./plugins/ditto",
+      "description": "Social posts in your own voice — blog, studio, personal account, anything: setup captures a style passport from your real posts plus your platforms, then any piece of news becomes a set of posts tailored per platform."
     }
   ]
 }

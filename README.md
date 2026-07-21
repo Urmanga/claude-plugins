@@ -12,7 +12,7 @@ Then install whichever plugins you want:
 
 ```
 /plugin install delegation@urmanga
-/plugin install gamesmm@urmanga
+/plugin install ditto@urmanga
 ```
 
 Requires Node 18+. Individual plugins may have their own requirements, noted below.
@@ -83,9 +83,9 @@ Failure injection lives in `test/fake/` — a fake agent with `leak`, `drain`, `
 
 ---
 
-## gamesmm
+## ditto
 
-Social posts for games, written in your voice rather than in the voice of a marketing department.
+Social posts written in your voice rather than in the voice of a marketing department — for a blog, a studio, a personal account, whatever you run.
 
 **Setup** captures a *style passport* from 3–7 of your real posts: sentence rhythm and variance, punctuation habits, emoji placement, how you address the reader, what your posts open and close with. Plus a **forbidden list** — the phrasings that never appear in your writing but that an AI reaches for anyway. The list catches fakeness more reliably than any positive description of tone.
 
@@ -97,11 +97,11 @@ The skill remembers. A local history log keeps the tags, links, and topics you'v
 
 Reference sheets ship with the plugin, built from three rounds of source-verified research: X, Threads, Reddit, Telegram, Instagram, YouTube, TikTok. Limits, truncation points, link placement, and the habits that actually move reach — for example, links belong in a reply on X, replies drive nearly half of all views on Threads, and Reddit bans "show, don't sell" violations faster than anything else.
 
-For indie gamedev there's a frame over all of it: social media is a funnel to Steam wishlists, not a sales channel, and without a demo posts barely move visibility at all.
+If you happen to be marketing a game, there's an extra frame on top: social media is a funnel to Steam wishlists, not a sales channel, and without a demo posts barely move visibility at all.
 
 ### Your data stays yours
 
-The style profile and post history live in `~/.claude/gamesmm/` — outside this repo, never committed. `.gitignore` carries a safety net in case a copy ever lands inside the plugin tree.
+The style profile and post history live in `~/.claude/ditto/` — outside this repo, never committed. `.gitignore` carries a safety net in case a copy ever lands inside the plugin tree.
 
 ---
 
@@ -116,8 +116,8 @@ plugins/
     skills/implement/SKILL.md     delegated coding behind acceptance gates
     skills/transform/SKILL.md     parallel pool for bulk mechanical edits
     test/fake/                    fake agent for failure injection
-  gamesmm/
-    skills/gamesmm/SKILL.md       setup and working mode
+  ditto/
+    skills/ditto/SKILL.md         setup and working mode
     reference/
       platforms.md                per-platform cheat sheet
       publishing.md               API access setup (not implemented yet)

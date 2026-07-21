@@ -1,0 +1,8 @@
+{
+  "name": "ditto",
+  "description": "Social posts in your own voice — for a blog, a studio, a personal account, anything. On first run the skill captures a style passport from your real posts and remembers your platforms; after that, any piece of news turns into a set of posts written the way you would write them.",
+  "author": {
+    "name": "urmanga"
+  },
+  "keywords": ["smm", "social-media", "writing-style", "content", "ghostwriting"]
+}

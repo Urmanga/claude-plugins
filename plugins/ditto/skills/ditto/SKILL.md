@@ -1,11 +1,11 @@
 ---
-name: gamesmm
-description: Writes SMM posts for games in the user's own voice. Use when the user wants to write a post, an announcement, a devlog post, or a batch of posts for social media — trigger phrases like "write a post", "announce this on socials", "devlog post", "spread this across platforms", or any mention of gamesmm. Also for setting up the writing profile — "set up my writing style", "update my style", "add a platform".
+name: ditto
+description: Writes social posts in the user's own voice — for a blog, a studio, a personal account, anything. Use when the user wants to write a post, an announcement, a devlog post, or a batch of posts for social media — trigger phrases like "write a post", "announce this on socials", "devlog post", "spread this across platforms", or any mention of ditto. Also for setting up the writing profile — "set up my writing style", "update my style", "add a platform".
 ---
 
-# gamesmm — posts in your voice
+# ditto — posts in your voice
 
-The skill lives in two modes. Personal data lives in `~/.claude/gamesmm/` (outside the repo, never goes to GitHub):
+The skill lives in two modes. Personal data lives in `~/.claude/ditto/` (outside the repo, never goes to GitHub):
 
 - `profile.md` — style passport, platforms, context, examples.
 - `history.md` — log of delivered posts (tags, links, topics). The skill's memory.
@@ -34,7 +34,7 @@ Separately build a **forbidden list** — turns of phrase, words, and moves that
 Show the passport and forbidden list to the user, let them correct it. After corrections, save the profile:
 
 ```markdown
-# gamesmm Profile
+# ditto Profile
 Updated: <date>
 
 ## Style Passport

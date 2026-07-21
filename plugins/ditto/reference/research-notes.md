@@ -1,4 +1,4 @@
-# gamesmm — research reference (3 rounds, Cursor CLI, July 2026)
+# ditto — research reference (3 rounds, Cursor CLI, July 2026)
 
 Everything below has been checked: every quote is backed by a page that was actually opened (the review process rejected agents that quoted things they hadn't actually opened). `[primary]` — primary source, `[secondary]` — secondary source. The user's stack: **text — X, Threads, Reddit, Telegram; video (occasional) — Instagram, YouTube; TikTok — planning from zero.**
 
@@ -8,7 +8,7 @@ Everything below has been checked: every quote is backed by a page that was actu
 
 **Research findings, not opinion:**
 - Few-shot with 3–5 real examples is the most reliable approach without fine-tuning. `[primary]` Anthropic: "Include 3–5 examples for best results." Having a live example in the prompt makes text sound more human than generating "on a topic" (arxiv 2506.09975).
-- **A static style guide without examples is often WORSE than plain few-shot.** `[primary]` "most LLMs exhibit reduced performance while transitioning from simple to directed prompting" (aclanthology 2024.personalize-1.6). → Takeaway for gamesmm: **examples matter more than the passport; the passport supplements, it doesn't replace.**
+- **A static style guide without examples is often WORSE than plain few-shot.** `[primary]` "most LLMs exhibit reduced performance while transitioning from simple to directed prompting" (aclanthology 2024.personalize-1.6). → Takeaway for ditto: **examples matter more than the passport; the passport supplements, it doesn't replace.**
 - More than 5–10 examples barely improve style alignment (arxiv 2509.14543). → 3–7 samples are enough; no need to chase quantity.
 - The ceiling for prompting alone is ~2/3 the quality of imitation vs. the original (aclanthology 2024.personalize-1.6). Honest limit: the skill gets close to the voice, it doesn't clone it 100%.
 
@@ -19,7 +19,7 @@ Everything below has been checked: every quote is backed by a page that was actu
 - `voice-extractor` (BrianRWagner): a minimum of 3 samples OR 500 words, plus a mandatory **validator**: generate version A (per the profile) and B (deliberately someone else's voice), then ask "does A really sound like you when you're not overdoing it?" `[primary]`
 - Prompting practice (PromptsDaily, aiprompthackers): "don't describe tone with adjectives; name patterns and quote actual phrases from the text; if an observation could apply to any author, cut it." `[primary/secondary]`
 
-**Direct upgrade for gamesmm's style passport:** add (a) the author's forbidden phrase list, (b) a check on sentence-length variance, (c) a final A/B test — "does this sound like you?"
+**Direct upgrade for ditto's style passport:** add (a) the author's forbidden phrase list, (b) a check on sentence-length variance, (c) a final A/B test — "does this sound like you?"
 
 ---
 
@@ -88,7 +88,7 @@ Markers readers and detectors use to spot AI — the skill must actively avoid t
 
 ## 4. Existing solutions (what to reuse)
 
-- **coreyhaines31/marketingskills** (67 skills, 3.6M installs) — the most mature one. Pattern: `product-marketing.md` as shared context (Brand Voice: Tone/Style/Personality + Customer Language + words to avoid), which the `social` skill reads FIRST before asking questions. Reference files `platforms.md`, `platform-limits.md`. **A direct blueprint for gamesmm's architecture.** `[primary]`
+- **coreyhaines31/marketingskills** (67 skills, 3.6M installs) — the most mature one. Pattern: `product-marketing.md` as shared context (Brand Voice: Tone/Style/Personality + Customer Language + words to avoid), which the `social` skill reads FIRST before asking questions. Reference files `platforms.md`, `platform-limits.md`. **A direct blueprint for ditto's architecture.** `[primary]`
 - **anthropics/skills PR #890** (brand-voice) — a 7-question survey, but WITHOUT analyzing a corpus of posts. `[primary]`
 - **anthropics/knowledge-work-plugins** — `brand-voice/agents/document-analysis.md` (extracts voice attributes with confidence scoring) + `draft-content` (platform rules). `[primary]`
 - Full post prompt templates with placeholders: Tracia, BrandGhost (platform limits baked in), Prompt Optimizer (LinkedIn), `post-templates.md` in marketingskills, telegrams.site (Telegram). `[secondary]`
@@ -106,12 +106,12 @@ Markers readers and detectors use to spot AI — the skill must actively avoid t
 
 ## 6. Pre-delivery post scoring rubric `[secondary]`
 
-Existing scoring systems to assemble gamesmm's internal check from:
+Existing scoring systems to assemble ditto's internal check from:
 - **TeamBench** (social media): Hook 30% + Brand Voice 30% + Clarity 20% + Engagement 20%, publish threshold 65/100. Hook rule: "the first line stops the scroll, without 'In today's...'".
 - **Acrid** (social AI, 5×20=100): Voice Match / Hook / Value / Originality / Platform Fit. **Minimum 70 to post; below 50, change the topic.**
 - Readability: Flesch ≥60 (Grammarly), ~8th-grade level (Hemingway). TextScore by platform: X 70–90, LinkedIn 55–70, Discord 75–90.
 
-**For gamesmm:** silently run each post through 5 criteria before delivering (voice / hook / value / platform / no AI markers); rewrite anything below the bar, don't show it raw.
+**For ditto:** silently run each post through 5 criteria before delivering (voice / hook / value / platform / no AI markers); rewrite anything below the bar, don't show it raw.
 
 ---
 

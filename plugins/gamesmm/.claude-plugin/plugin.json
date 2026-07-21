@@ -1,8 +1,0 @@
-{
-  "name": "gamesmm",
-  "description": "Social posts for games in your own voice. On first run the skill captures a style passport from your real posts and remembers your platforms; after that, any piece of news turns into a set of posts written the way you would write them.",
-  "author": {
-    "name": "urmanga"
-  },
-  "keywords": ["smm", "gamedev", "social-media", "writing-style"]
-}

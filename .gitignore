@@ -1,10 +1,10 @@
-# Personal gamesmm data — style profile, post history, keys.
-# These normally live in ~/.claude/gamesmm/ (outside this repo); the rules
+# Personal ditto data — style profile, post history, keys.
+# These normally live in ~/.claude/ditto/ (outside this repo); the rules
 # below are a safety net in case a file ends up inside the plugin tree.
 profile.md
 history.md
-**/gamesmm/**/profile.md
-**/gamesmm/**/history.md
+**/ditto/**/profile.md
+**/ditto/**/history.md
 .env
 *.local
 
